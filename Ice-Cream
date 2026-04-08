@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Savdo Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div id="app" class="p-4">
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Bizning Do'kon</h1>
+            <span id="user-name" class="text-sm font-medium text-blue-600"></span>
+        </header>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+                <img src="https://via.placeholder.com/150" class="rounded-lg mb-2">
+                <h3 class="font-semibold text-gray-700">Mahsulot nomi</h3>
+                <p class="text-blue-500 font-bold mt-1">50,000 so'm</p>
+                <button onclick="addToCart('Mahsulot 1', 50000)" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm active:scale-95 transition">
+                    Savatga
+                </button>
+            </div>
+            
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+                <img src="https://via.placeholder.com/150" class="rounded-lg mb-2">
+                <h3 class="font-semibold text-gray-700">Mahsulot nomi</h3>
+                <p class="text-blue-500 font-bold mt-1">75,000 so'm</p>
+                <button onclick="addToCart('Mahsulot 2', 75000)" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm active:scale-95 transition">
+                    Savatga
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Ilovani to'liq ekranga yoyish
+
+        // Foydalanuvchi ismini chiqarish
+        document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Mehmon";
+
+        function addToCart(name, price) {
+            // Telegramga ma'lumot yuborish yoki MainButton-ni yoqish
+            tg.MainButton.setText(`Sotib olish: ${price} so'm`);
+            tg.MainButton.show();
+            
+            tg.MainButton.onClick(() => {
+                tg.sendData(JSON.stringify({product: name, price: price}));
+                tg.close();
+            });
+        }
+    </script>
+</body>
+</html>
