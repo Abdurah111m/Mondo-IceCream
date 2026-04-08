@@ -2,52 +2,76 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Savdo Bot</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mondo IceCream</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Maxsus dizayn: Muzqaymoq brendiga mos pastel ranglar */
+        .brand-gradient {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+        }
+        .product-card:active {
+            transform: scale(0.98);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-50 font-sans select-none">
 
-    <div id="app" class="p-4">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Bizning Do'kon</h1>
-            <span id="user-name" class="text-sm font-medium text-blue-600"></span>
-        </header>
+    <header class="brand-gradient p-6 rounded-b-[30px] shadow-lg mb-6">
+        <div class="flex flex-col items-center text-white">
+            <h1 class="text-3xl font-extrabold tracking-tight">MONDO</h1>
+            <p class="text-sm opacity-90 font-medium">Gelato & Ice Cream</p>
+        </div>
+    </header>
+
+    <div class="p-4">
+        <div class="flex items-center justify-between mb-6 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+            <span class="text-gray-500 text-sm">Xush kelibsiz,</span>
+            <span id="user-name" class="font-bold text-blue-600">Mehmon</span>
+        </div>
 
         <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                <img src="https://via.placeholder.com/150" class="rounded-lg mb-2">
-                <h3 class="font-semibold text-gray-700">Mahsulot nomi</h3>
-                <p class="text-blue-500 font-bold mt-1">50,000 so'm</p>
-                <button onclick="addToCart('Mahsulot 1', 50000)" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm active:scale-95 transition">
-                    Savatga
-                </button>
-            </div>
             
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
-                <img src="https://via.placeholder.com/150" class="rounded-lg mb-2">
-                <h3 class="font-semibold text-gray-700">Mahsulot nomi</h3>
-                <p class="text-blue-500 font-bold mt-1">75,000 so'm</p>
-                <button onclick="addToCart('Mahsulot 2', 75000)" class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm active:scale-95 transition">
-                    Savatga
+            <div class="product-card bg-white p-3 rounded-3xl shadow-md border border-gray-50 flex flex-col items-center transition-all">
+                <div class="w-full h-32 bg-pink-100 rounded-2xl mb-3 flex items-center justify-center">
+                    <span class="text-4xl">🍦</span>
+                </div>
+                <h3 class="font-bold text-gray-800 text-center text-sm">Classic Cono</h3>
+                <p class="text-pink-500 font-extrabold mt-1">15,000 so'm</p>
+                <button onclick="addToCart('Classic Cono', 15000)" class="w-full mt-3 bg-gray-900 text-white py-2.5 rounded-xl text-xs font-bold active:bg-pink-600 transition-colors">
+                    SAVATGA
                 </button>
             </div>
+
+            <div class="product-card bg-white p-3 rounded-3xl shadow-md border border-gray-50 flex flex-col items-center transition-all">
+                <div class="w-full h-32 bg-blue-100 rounded-2xl mb-3 flex items-center justify-center">
+                    <span class="text-4xl">🍫</span>
+                </div>
+                <h3 class="font-bold text-gray-800 text-center text-sm">Choco Mondo</h3>
+                <p class="text-pink-500 font-extrabold mt-1">18,000 so'm</p>
+                <button onclick="addToCart('Choco Mondo', 18000)" class="w-full mt-3 bg-gray-900 text-white py-2.5 rounded-xl text-xs font-bold active:bg-pink-600 transition-colors">
+                    SAVATGA
+                </button>
+            </div>
+
         </div>
     </div>
     <script src="script.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Ilovani to'liq ekranga yoyish
-
+        tg.expand();
+        
         // Foydalanuvchi ismini chiqarish
-        document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Mehmon";
+        document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Mijoz";
 
         function addToCart(name, price) {
-            // Telegramga ma'lumot yuborish yoki MainButton-ni yoqish
-            tg.MainButton.setText(`Sotib olish: ${price} so'm`);
+            tg.MainButton.setText(`SOTIB OLISH: ${price.toLocaleString()} so'm`);
             tg.MainButton.show();
+            tg.MainButton.setParams({
+                color: '#ec4899', // Pink rang
+                text_color: '#ffffff'
+            });
             
             tg.MainButton.onClick(() => {
                 tg.sendData(JSON.stringify({product: name, price: price}));
