@@ -33,26 +33,19 @@ function addToCart(name, price) {
         tg.close();
     });
 }
-GROUP_ID = -1003728902443 # O'zingizning guruh ID-ingizni yozing
+function sendOrder(name, price) {
+    // Lokatsiyani olish (ixtiyoriy)
+    navigator.geolocation.getCurrentPosition((position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const locationLink = `https://www.google.com/maps?q=${lat},${lon}`;
 
-@dp.message_handler(content_types=['web_app_data'])
-async def get_order(message: types.Message):
-    data = json.loads(message.web_app_data.data)
-    
-    # Mini App'dan keladigan ma'lumotlar
-    product = data.get('product')
-    price = data.get('price')
-    location = data.get('location', 'Ko\'rsatilmagan') # Agar lokatsiya yuborilsa
-    
-    # Guruhga yuboriladigan xabar formati (Cono uslubida)
-    report = (
-        f"🍦 **YANGI BUYURTMA!**\n\n"
-        f"👤 Mijoz: {message.from_user.first_name}\n"
-        f"🍨 Mahsulot: {product}\n"
-        f"💰 Narxi: {price} so'm\n"
-        f"📍 Lokatsiya: {location}\n\n"
-        f"Keep it cooooool! ❄️"
-    )
-    
-    await bot.send_message(GROUP_ID, report)
-    await message.answer("Rahmat! Buyurtmangiz qabul qilindi. 🍦")
+        const orderData = {
+            product: name,
+            price: price,
+            location: locationLink
+        };
+
+        tg.sendData(JSON.stringify(orderData));
+    });
+}
