@@ -73,3 +73,46 @@ tg.MainButton.onClick(() => {
         options
     );
 });
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+let cart = [];
+
+// Savatga qo'shish (Majburiy bitta funksiya)
+function addToCart(name, price) {
+    cart.push({ name, price: parseInt(price) });
+    updateMainButton();
+}
+
+function updateMainButton() {
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    if (total > 0) {
+        tg.MainButton.setText(`BUYURTMA: ${total.toLocaleString()} so'm`);
+        tg.MainButton.setParams({ color: '#ec4899', text_color: '#ffffff' });
+        tg.MainButton.show();
+    } else {
+        tg.MainButton.hide();
+    }
+}
+
+// TUGMA BOSILGANDA (Faqat bir marta registratsiya qilinadi)
+tg.MainButton.onClick(() => {
+    // Lokatsiya olish va yuborish
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const data = {
+                products: cart,
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude
+            };
+            tg.sendData(JSON.stringify(data));
+            tg.close();
+        },
+        (err) => {
+            // Lokatsiya rad etilsa ham yuborish
+            tg.sendData(JSON.stringify({ products: cart, lat: null, lon: null }));
+            tg.close();
+        },
+        { timeout: 5000 }
+    );
+});
