@@ -1,115 +1,78 @@
-// script.js
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.MainButton.setParams({ color: '#FF6B6B', text_color: '#ffffff' });
 
+// Cono Guideline: Living Coral rangini asosiy tugmaga o'rnatamiz 
+tg.MainButton.setParams({ 
+    color: '#ff6d70', 
+    text_color: '#ffffff' 
+});
+
+// Mahsulotlar ro'yxati (Narxlar son formatida bo'lishi shart)
 const products = [
-    { id: 1, name: "Mondo Classic", price: "15,000", img: "https://via.placeholder.com/150" },
-    { id: 2, name: "Mondo Choco", price: "18,000", img: "https://via.placeholder.com/150" },
-    { id: 3, name: "Mondo Berry", price: "17,000", img: "https://via.placeholder.com/150" },
-    { id: 4, name: "Mondo Nut", price: "20,000", img: "https://via.placeholder.com/150" }
+    { id: 1, name: "Mondo Classic", price: 15000, img: "https://via.placeholder.com/150" },
+    { id: 2, name: "Mondo Choco", price: 18000, img: "https://via.placeholder.com/150" },
+    { id: 3, name: "Mondo Berry", price: 17000, img: "https://via.placeholder.com/150" },
+    { id: 4, name: "Mondo Nut", price: 20000, img: "https://via.placeholder.com/150" }
 ];
 
+let cart = [];
 const container = document.getElementById('product-container');
 
+// Kartochkalarni generatsiya qilish
 products.forEach(product => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
         <img src="${product.img}" alt="${product.name}">
-        <h3 style="font-size: 14px; margin: 10px 0 5px;">${product.name}</h3>
-        <p class="price">${product.price} so'm</p>
-        <button class="add-btn" onclick="addToCart('${product.name}', '${product.price}')">Savatga</button>
+        <h3 style="font-family: 'Geologica', sans-serif; font-size: 14px; margin: 10px 0 5px;">${product.name}</h3>
+        <p class="price" style="color: #c8102e; font-weight: bold;">${product.price.toLocaleString()} so'm</p>
+        <button class="add-btn" 
+                style="background-color: #ff6d70; color: white; border: none; padding: 8px; border-radius: 10px; cursor: pointer;"
+                onclick="addToCart('${product.name}', ${product.price})">
+            Savatga 🍦
+        </button>
     `;
     container.appendChild(card);
 });
 
-function addToCart(name, price) {
-    tg.MainButton.setText(`Sotib olish: ${name} (${price} so'm)`);
-    tg.MainButton.show();
-    
-    tg.MainButton.onClick(() => {
-        tg.sendData(JSON.stringify({product: name, price: price}));
-        tg.close();
-    });
-}
-function sendOrder(name, price) {
-    // Lokatsiyani olish (ixtiyoriy)
-    navigator.geolocation.getCurrentPosition((position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const locationLink = `https://www.google.com/maps?q=${lat},${lon}`;
-
-        const orderData = {
-            product: name,
-            price: price,
-            location: locationLink
-        };
-
-        tg.sendData(JSON.stringify(orderData));
-    });
-}
-tg.MainButton.onClick(() => {
-    tg.sendData(JSON.stringify({product: name, price: price})); // Ma'lumot yuborish
-    tg.close(); // Ilovani yopish (Aynan shu buyruq ilovadan chiqarib yuboradi)
-});
-let cart = []; // Savatni saqlash uchun massiv
-
+// Savatga qo'shish funksiyasi
 function addToCart(name, price) {
     cart.push({ name, price });
     updateMainButton();
 }
 
+// Asosiy tugmani yangilash
 function updateMainButton() {
-    const tg = window.Telegram.WebApp;
     if (cart.length > 0) {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
         tg.MainButton.setText(`BUYURTMA BERISH: ${total.toLocaleString()} so'm`);
         tg.MainButton.show();
-        // Cono Guideline bo'yicha rang: Living Coral (#ff6d70)
-        tg.MainButton.setParams({ color: '#ff6d70', text_color: '#ffffff' }); 
+    } else {
+        tg.MainButton.hide();
     }
 }
 
-// Telegram tugmasi bosilganda
-window.Telegram.WebApp.MainButton.onClick(() => {
-    const tg = window.Telegram.WebApp;
-    
-    // Lokatsiyani so'rash
-    navigator.geolocation.getCurrentPosition((pos) => {
-        const orderData = {
-            products: cart,
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude
-        };
-        tg.sendData(JSON.stringify(orderData)); // Ma'lumotni Python botga yuboradi
-    }, (err) => {
-        // Agar lokatsiyaga ruxsat bermasa, faqat mahsulotlarni yuboradi
-        tg.sendData(JSON.stringify({ products: cart, lat: null, lon: null }));
-    });
-});
-let tg = window.Telegram.WebApp;
-tg.expand(); // Ilovani to'liq ekranga ochish
-
-let cart = [];
-
-function addToCart(name, price) {
-    cart.push({ name, price });
-    
-    // Pastdagi asosiy tugmani ko'rsatish
-    tg.MainButton.text = "BUYURTMANI TASDIQLASH";
-    tg.MainButton.show();
-    
-    // Cono brendi ranglari (Guideline bo'yicha)
-    tg.MainButton.setParams({
-        color: "#ff6d70", // Living Coral [cite: 102]
-        text_color: "#ffffff"
-    });
-}
-
-// Tugma bosilganda yuborish
+// Telegram MainButton bosilganda ma'lumot yuborish
 tg.MainButton.onClick(() => {
-    if (cart.length > 0) {
-        tg.sendData(JSON.stringify(cart)); // Ma'lumotni yuborib, ilovani yopadi
-    }
+    // Lokatsiyani olishga harakat qilamiz
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const orderData = {
+                products: cart,
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            };
+            tg.sendData(JSON.stringify(orderData));
+        },
+        (error) => {
+            // Lokatsiyaga ruxsat bermasa ham buyurtmani yuboramiz
+            const orderData = {
+                products: cart,
+                lat: null,
+                lon: null
+            };
+            tg.sendData(JSON.stringify(orderData));
+        },
+        { timeout: 5000 } // 5 soniya kutish
+    );
 });
