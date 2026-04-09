@@ -88,3 +88,28 @@ window.Telegram.WebApp.MainButton.onClick(() => {
         tg.sendData(JSON.stringify({ products: cart, lat: null, lon: null }));
     });
 });
+let tg = window.Telegram.WebApp;
+tg.expand(); // Ilovani to'liq ekranga ochish
+
+let cart = [];
+
+function addToCart(name, price) {
+    cart.push({ name, price });
+    
+    // Pastdagi asosiy tugmani ko'rsatish
+    tg.MainButton.text = "BUYURTMANI TASDIQLASH";
+    tg.MainButton.show();
+    
+    // Cono brendi ranglari (Guideline bo'yicha)
+    tg.MainButton.setParams({
+        color: "#ff6d70", // Living Coral [cite: 102]
+        text_color: "#ffffff"
+    });
+}
+
+// Tugma bosilganda yuborish
+tg.MainButton.onClick(() => {
+    if (cart.length > 0) {
+        tg.sendData(JSON.stringify(cart)); // Ma'lumotni yuborib, ilovani yopadi
+    }
+});
