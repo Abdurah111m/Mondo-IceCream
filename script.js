@@ -49,3 +49,42 @@ function sendOrder(name, price) {
         tg.sendData(JSON.stringify(orderData));
     });
 }
+tg.MainButton.onClick(() => {
+    tg.sendData(JSON.stringify({product: name, price: price})); // Ma'lumot yuborish
+    tg.close(); // Ilovani yopish (Aynan shu buyruq ilovadan chiqarib yuboradi)
+});
+let cart = []; // Savatni saqlash uchun massiv
+
+function addToCart(name, price) {
+    cart.push({ name, price });
+    updateMainButton();
+}
+
+function updateMainButton() {
+    const tg = window.Telegram.WebApp;
+    if (cart.length > 0) {
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        tg.MainButton.setText(`BUYURTMA BERISH: ${total.toLocaleString()} so'm`);
+        tg.MainButton.show();
+        // Cono Guideline bo'yicha rang: Living Coral (#ff6d70)
+        tg.MainButton.setParams({ color: '#ff6d70', text_color: '#ffffff' }); 
+    }
+}
+
+// Telegram tugmasi bosilganda
+window.Telegram.WebApp.MainButton.onClick(() => {
+    const tg = window.Telegram.WebApp;
+    
+    // Lokatsiyani so'rash
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const orderData = {
+            products: cart,
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude
+        };
+        tg.sendData(JSON.stringify(orderData)); // Ma'lumotni Python botga yuboradi
+    }, (err) => {
+        // Agar lokatsiyaga ruxsat bermasa, faqat mahsulotlarni yuboradi
+        tg.sendData(JSON.stringify({ products: cart, lat: null, lon: null }));
+    });
+});
