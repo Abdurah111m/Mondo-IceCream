@@ -1,30 +1,34 @@
-// 1. Telegram WebApp sozlamalari
+// 1. Telegram WebApp asosiy obyektini olish
 const tg = window.Telegram.WebApp;
-tg.expand();
+tg.expand(); // Ilovani to'liq ochish
 
-// Savat massivi (Faqat bir marta e'lon qilinadi)
+// Savat massivi
 let cart = [];
 
-// 2. Savatga qo'shish funksiyasi
+// 2. Savatga qo'shish funksiyasi (HTML tugmalari buni chaqiradi)
 function addToCart(name, price) {
-    // Narxni songa aylantirish
-    const numericPrice = parseInt(price.toString().replace(/\D/g, ''));
+    // Savatga mahsulotni qo'shish
+    cart.push({ name: name, price: parseInt(price) });
     
-    // Savatga ob'ekt qo'shish
-    cart.push({ name: name, price: numericPrice });
-    
-    // Tugmani yangilash
+    // Savat yangilangani uchun asosiy tugmani yangilaymiz
     updateMainButton();
+    
+    // Vizual effekt (Haptic feedback) - telefon titrashi (agar qo'llab-quvvatlasa)
+    if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('medium');
+    }
 }
 
-// 3. Asosiy tugmani boshqarish
+// 3. Asosiy tugmani yangilash
 function updateMainButton() {
     if (cart.length > 0) {
+        // Jami summani hisoblash
         const total = cart.reduce((sum, item) => sum + item.price, 0);
         
-        tg.MainButton.setText(`BUYURTMA: ${total.toLocaleString()} so'm`);
+        // Telegram pastki tugmasini sozlash
+        tg.MainButton.setText(`TASDIQLASH: ${total.toLocaleString()} so'm`);
         tg.MainButton.setParams({
-            color: '#ff6d70', // Cono Living Coral
+            color: '#ec4899', // Pink-600 (Tailwind rangiga mos)
             text_color: '#ffffff'
         });
         tg.MainButton.show();
@@ -33,37 +37,31 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtma berish (Tugma bosilganda)
+// 4. Buyurtmani yuborish (Asosiy tugma bosilganda)
 tg.MainButton.onClick(() => {
     if (cart.length === 0) return;
 
-    // Lokatsiya olish parametrlari
-    const geoOptions = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-    };
-
+    // Lokatsiya so'rash va ma'lumotni Python botga yuborish
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            const result = {
+            const data = {
                 products: cart,
                 lat: pos.coords.latitude,
                 lon: pos.coords.longitude
             };
-            tg.sendData(JSON.stringify(result));
-            tg.close();
+            tg.sendData(JSON.stringify(data)); // Python'ga signal ketdi
+            tg.close(); // Ilova yopiladi
         },
         (err) => {
-            // Lokatsiya olinmasa ham ma'lumotni yuborish
-            const result = {
+            // Lokatsiya rad etilsa ham buyurtma ketadi
+            const data = {
                 products: cart,
                 lat: null,
                 lon: null
             };
-            tg.sendData(JSON.stringify(result));
+            tg.sendData(JSON.stringify(data));
             tg.close();
         },
-        geoOptions
+        { timeout: 5000 }
     );
 });
