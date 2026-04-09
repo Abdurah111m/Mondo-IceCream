@@ -1,15 +1,14 @@
-// 1. Telegram WebApp asosiy obyektini sozlash
 const tg = window.Telegram.WebApp;
-tg.expand();
 
-// Asosiy ranglarni brendga moslash (ixtiyoriy)
+// Ilovani tayyorlash
+tg.ready();
+tg.expand();
 tg.setHeaderColor('#fbc2eb'); 
 
 let cart = [];
 
-// 2. Savatga qo'shish funksiyasi
+// Savatga qo'shish funksiyasi
 function addToCart(name, price) {
-    // Narxni tozalash (faqat raqamlar)
     const numericPrice = typeof price === 'string' 
         ? parseInt(price.replace(/\D/g, '')) 
         : price;
@@ -18,13 +17,12 @@ function addToCart(name, price) {
     
     updateMainButton();
     
-    // Haptic Feedback (Muvaffaqiyatli qo'shilganda yengil tebranish)
     if (tg.HapticFeedback) {
         tg.HapticFeedback.notificationOccurred('success');
     }
 }
 
-// 3. Pastki tugmani yangilash (UX optimizatsiyasi bilan)
+// Pastki tugmani boshqarish
 function updateMainButton() {
     if (cart.length > 0) {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
@@ -41,45 +39,43 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtmani yuborish (MUKAMMAL VARIANT)
-tg.MainButton.onClick(async () => {
+// Buyurtmani yakunlash
+tg.MainButton.onClick(() => {
     if (cart.length === 0) return;
 
-    // UX: Tugmani yuklanish holatiga o'tkazamiz (Loading)
     tg.MainButton.showProgress();
     tg.MainButton.disable();
 
-    // Ma'lumotni yuborish funksiyasi (Takrorlanishni kamaytirish uchun)
     const sendOrder = (lat = null, lon = null) => {
-        const data = JSON.stringify({
-            products: cart,
-            location: { lat, lon },
-            order_date: new Date().toISOString()
-        });
+        try {
+            const data = JSON.stringify({
+                products: cart,
+                location: { lat, lon },
+                total_price: cart.reduce((s, i) => s + i.price, 0)
+            });
 
-        tg.sendData(data);
-        
-        // Signal ketishi uchun biroz kutib, keyin yopamiz
-        setTimeout(() => {
-            tg.close();
-        }, 800);
+            tg.sendData(data);
+            
+            // Ma'lumot uzatilgach yopish
+            setTimeout(() => {
+                tg.close();
+            }, 700);
+        } catch (e) {
+            console.error("Xatolik:", e);
+            tg.MainButton.hideProgress();
+            tg.MainButton.enable();
+        }
     };
 
-    // Lokatsiya olish sozlamalari
-    const geoOptions = {
-        enableHighAccuracy: true,
-        timeout: 4000, // 4 soniya kutadi, keyin xatolikka o'tadi
-        maximumAge: 0
-    };
+    const geoOptions = { enableHighAccuracy: true, timeout: 4000 };
 
-    // Lokatsiyani so'rash
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (pos) => sendOrder(pos.coords.latitude, pos.coords.longitude),
-            (err) => sendOrder(), // Xatolik bo'lsa (rad etsa), lokatsiyasiz yuboradi
+            () => sendOrder(), // Rad etilsa lokatsiyasiz ketadi
             geoOptions
         );
     } else {
-        sendOrder(); // Geolocation qo'llab-quvvatlanmasa
+        sendOrder();
     }
 });
