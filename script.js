@@ -52,6 +52,11 @@ function updateMainButton() {
     }
 }
 
+tg.MainButton.onClick(() => {
+    const data = JSON.stringify(cart); // Savatni JSON ga aylantirish
+    tg.sendData(data); // MA'LUMOTNI YUBORISH (Eng asosiysi shu!)
+});
+
 // Telegram MainButton bosilganda ma'lumot yuborish
 tg.MainButton.onClick(() => {
     // Lokatsiyani olishga harakat qilamiz
