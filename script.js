@@ -6,7 +6,7 @@ let cart = [];
 
 // 2. Savatga qo'shish funksiyasi
 function addToCart(name, price) {
-    // Narxni raqamga aylantirish (probel yoki so'm yozuvlarini tozalaydi)
+    // Narxdan faqat raqamlarni olib, songa aylantiradi
     const numericPrice = parseInt(price.toString().replace(/\D/g, ''));
     
     cart.push({ name: name, price: numericPrice });
@@ -14,7 +14,7 @@ function addToCart(name, price) {
     // Tugmani yangilash
     updateMainButton();
     
-    // Vibratsiya (Haptic feedback)
+    // Vibratsiya effekti
     if (tg.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
     }
@@ -27,7 +27,7 @@ function updateMainButton() {
         
         tg.MainButton.setText(`TASDIQLASH: ${total.toLocaleString()} so'm`);
         tg.MainButton.setParams({
-            color: '#ec4899', // Mondo brendiga mos pushti rang
+            color: '#ec4899', // Mondo pushti rangi
             text_color: '#ffffff'
         });
         tg.MainButton.show();
@@ -36,46 +36,41 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtmani yuborish (YAGONA VA TOZA FUNKSIYA)
+// 4. Buyurtmani yuborish (Yagona va tartibli onClick)
 tg.MainButton.onClick(() => {
     if (cart.length === 0) return;
 
-    const options = {
+    // Lokatsiya olish uchun sozlamalar
+    const geoOptions = {
         enableHighAccuracy: true,
         timeout: 5000,
         maximumAge: 0
     };
 
-    // Lokatsiyani olishga harakat qilamiz
     navigator.geolocation.getCurrentPosition(
         (pos) => {
+            // Lokatsiya bilan yuborish
             const dataToSend = JSON.stringify({
                 products: cart,
                 lat: pos.coords.latitude,
                 lon: pos.coords.longitude
             });
+            tg.sendData(dataToSend);
             
-            tg.sendData(dataToSend); // Ma'lumotni botga uzatish
-            
-            // Muhim: Telegram signalni qabul qilishi uchun 600ms kutamiz
-            setTimeout(() => {
-                tg.close();
-            }, 600);
+            // Signal ketishi uchun 1 soniya kutamiz
+            setTimeout(() => { tg.close(); }, 1000);
         },
         (err) => {
-            // Lokatsiya olinmasa ham buyurtmani yuboramiz
+            // Lokatsiyasiz yuborish
             const dataToSend = JSON.stringify({
                 products: cart,
                 lat: null,
                 lon: null
             });
-            
             tg.sendData(dataToSend);
             
-            setTimeout(() => {
-                tg.close();
-            }, 600);
+            setTimeout(() => { tg.close(); }, 1000);
         },
-        options
+        geoOptions
     );
 });
