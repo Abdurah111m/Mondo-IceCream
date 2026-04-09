@@ -1,38 +1,37 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Cono Guideline: Living Coral rangini asosiy tugmaga o'rnatamiz 
-tg.MainButton.setParams({ 
-    color: '#ff6d70', 
-    text_color: '#ffffff' 
-});
-
-// Mahsulotlar ro'yxati (Narxlar son formatida bo'lishi shart)
-const products = [
-    { id: 1, name: "Mondo Classic", price: 15000, img: "https://via.placeholder.com/150" },
-    { id: 2, name: "Mondo Choco", price: 18000, img: "https://via.placeholder.com/150" },
-    { id: 3, name: "Mondo Berry", price: 17000, img: "https://via.placeholder.com/150" },
-    { id: 4, name: "Mondo Nut", price: 20000, img: "https://via.placeholder.com/150" }
-];
-
 let cart = [];
-const container = document.getElementById('product-container');
 
-// Kartochkalarni generatsiya qilish
-products.forEach(product => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-        <img src="${product.img}" alt="${product.name}">
-        <h3 style="font-family: 'Geologica', sans-serif; font-size: 14px; margin: 10px 0 5px;">${product.name}</h3>
-        <p class="price" style="color: #c8102e; font-weight: bold;">${product.price.toLocaleString()} so'm</p>
-        <button class="add-btn" 
-                style="background-color: #ff6d70; color: white; border: none; padding: 8px; border-radius: 10px; cursor: pointer;"
-                onclick="addToCart('${product.name}', ${product.price})">
-            Savatga 🍦
-        </button>
-    `;
-    container.appendChild(card);
+// Savatga qo'shish funksiyasi
+function addToCart(name, price) {
+    // Narxni son ko'rinishiga keltirish (agar matn bo'lsa)
+    const numericPrice = parseInt(price.toString().replace(/\D/g, ''));
+    
+    cart.push({ name: name, price: numericPrice });
+    
+    // Tugmani ko'rsatish va matnini yangilash
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    tg.MainButton.setText(`TASDIQLASH: ${total.toLocaleString()} so'm`);
+    tg.MainButton.show();
+    
+    // Cono brend rangi: Living Coral
+    tg.MainButton.setParams({ color: '#ff6d70' });
+}
+
+// ASOSIY TUGMA BOSILGANDA
+tg.MainButton.onClick(() => {
+    if (cart.length > 0) {
+        // Ma'lumotni JSON qilib yuboramiz
+        const dataToSend = JSON.stringify({
+            products: cart,
+            total: cart.reduce((sum, item) => sum + item.price, 0)
+        });
+        
+        tg.sendData(dataToSend); // Ilova shu yerda yopilishi shart!
+    } else {
+        alert("Savat bo'sh! Muzqaymoq tanlang 🍦");
+    }
 });
 
 // Savatga qo'shish funksiyasi
