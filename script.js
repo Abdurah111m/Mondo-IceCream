@@ -1,34 +1,33 @@
-// 1. Telegram WebApp asosiy obyektini olish
+// 1. Telegram WebApp sozlamalari
 const tg = window.Telegram.WebApp;
-tg.expand(); // Ilovani to'liq ochish
+tg.expand();
 
-// Savat massivi
 let cart = [];
 
-// 2. Savatga qo'shish funksiyasi (HTML tugmalari buni chaqiradi)
+// 2. Savatga qo'shish funksiyasi
 function addToCart(name, price) {
-    // Savatga mahsulotni qo'shish
-    cart.push({ name: name, price: parseInt(price) });
+    // Narxni raqamga aylantirish (probel yoki so'm yozuvlarini tozalaydi)
+    const numericPrice = parseInt(price.toString().replace(/\D/g, ''));
     
-    // Savat yangilangani uchun asosiy tugmani yangilaymiz
+    cart.push({ name: name, price: numericPrice });
+    
+    // Tugmani yangilash
     updateMainButton();
     
-    // Vizual effekt (Haptic feedback) - telefon titrashi (agar qo'llab-quvvatlasa)
+    // Vibratsiya (Haptic feedback)
     if (tg.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('medium');
     }
 }
 
-// 3. Asosiy tugmani yangilash
+// 3. Pastki tugmani yangilash
 function updateMainButton() {
     if (cart.length > 0) {
-        // Jami summani hisoblash
         const total = cart.reduce((sum, item) => sum + item.price, 0);
         
-        // Telegram pastki tugmasini sozlash
         tg.MainButton.setText(`TASDIQLASH: ${total.toLocaleString()} so'm`);
         tg.MainButton.setParams({
-            color: '#ec4899', // Pink-600 (Tailwind rangiga mos)
+            color: '#ec4899', // Mondo brendiga mos pushti rang
             text_color: '#ffffff'
         });
         tg.MainButton.show();
@@ -37,31 +36,46 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtmani yuborish (Asosiy tugma bosilganda)
+// 4. Buyurtmani yuborish (YAGONA VA TOZA FUNKSIYA)
 tg.MainButton.onClick(() => {
     if (cart.length === 0) return;
 
-    // Lokatsiya so'rash va ma'lumotni Python botga yuborish
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+    };
+
+    // Lokatsiyani olishga harakat qilamiz
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            const data = {
+            const dataToSend = JSON.stringify({
                 products: cart,
                 lat: pos.coords.latitude,
                 lon: pos.coords.longitude
-            };
-            tg.sendData(JSON.stringify(data)); // Python'ga signal ketdi
-            tg.close(); // Ilova yopiladi
+            });
+            
+            tg.sendData(dataToSend); // Ma'lumotni botga uzatish
+            
+            // Muhim: Telegram signalni qabul qilishi uchun 600ms kutamiz
+            setTimeout(() => {
+                tg.close();
+            }, 600);
         },
         (err) => {
-            // Lokatsiya rad etilsa ham buyurtma ketadi
-            const data = {
+            // Lokatsiya olinmasa ham buyurtmani yuboramiz
+            const dataToSend = JSON.stringify({
                 products: cart,
                 lat: null,
                 lon: null
-            };
-            tg.sendData(JSON.stringify(data));
-            tg.close();
+            });
+            
+            tg.sendData(dataToSend);
+            
+            setTimeout(() => {
+                tg.close();
+            }, 600);
         },
-        { timeout: 5000 }
+        options
     );
 });
