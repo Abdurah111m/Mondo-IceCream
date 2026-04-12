@@ -1,7 +1,6 @@
 // 1. Telegram WebApp sozlamalari
 const tg = window.Telegram.WebApp;
 
-// Ilovani tayyorlash va kengaytirish
 tg.ready();
 tg.expand();
 tg.setHeaderColor('#fbc2eb'); 
@@ -10,27 +9,22 @@ let cart = [];
 
 // 2. Savatga qo'shish funksiyasi
 function addToCart(name, price) {
-    // Narxni raqam formatiga keltirish
     const numericPrice = typeof price === 'string' 
         ? parseInt(price.replace(/\D/g, '')) 
         : parseInt(price);
     
     cart.push({ name: name, price: numericPrice });
-    
-    // Pastki tugmani yangilash
     updateMainButton();
     
-    // Muvaffaqiyatli tebranish (Haptic Feedback)
     if (tg.HapticFeedback) {
         tg.HapticFeedback.notificationOccurred('success');
     }
 }
 
-// 3. Pastki tugmani boshqarish
+// 3. Pastki tugmani yangilash
 function updateMainButton() {
     if (cart.length > 0) {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
-        
         tg.MainButton.setParams({
             text: `TASDIQLASH: ${total.toLocaleString()} so'm`,
             color: '#ec4899', 
@@ -43,18 +37,15 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtmani yuborish (YAGONA VA XAVFSIZ FUNKSIYA)
+// 4. Buyurtmani yuborish (Yaxlit va To'g'ri Funksiya)
 tg.MainButton.onClick(() => {
-    if (cart.length === 0) return;
-
-    // Tugmada yuklanish animatsiyasini ko'rsatish
+    // Aylanib turish animatsiyasini yoqamiz
     tg.MainButton.showProgress();
     tg.MainButton.disable();
 
-    // Ma'lumotni yuborish jarayoni
+    // Ma'lumotni yuborish ichki funksiyasi
     const sendOrder = (lat = null, lon = null) => {
         try {
-            // Botga yuboriladigan ma'lumot tuzilmasi
             const data = JSON.stringify({
                 products: cart,
                 location: { lat, lon },
@@ -64,10 +55,10 @@ tg.MainButton.onClick(() => {
             // Signalni yuborish
             tg.sendData(data);
             
-            // Signal yetib borishi uchun 1.5 soniya kutib, keyin yopamiz
+            // Signal yetib borishi uchun 2 soniya kutib, keyin yopamiz
             setTimeout(() => {
                 tg.close();
-            }, 1500);
+            }, 2000);
         } catch (e) {
             console.error("Xatolik yuz berdi:", e);
             tg.MainButton.hideProgress();
@@ -77,15 +68,15 @@ tg.MainButton.onClick(() => {
     };
 
     // Lokatsiya olish (timeout bilan)
-    const geoOptions = { enableHighAccuracy: true, timeout: 3500 };
+    const geoOptions = { enableHighAccuracy: true, timeout: 4000 };
 
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (pos) => sendOrder(pos.coords.latitude, pos.coords.longitude),
-            () => sendOrder(), // Rad etilsa yoki xato bo'lsa lokatsiyasiz ketadi
+            () => sendOrder(), // Rad etilsa lokatsiyasiz ketadi
             geoOptions
         );
     } else {
-        sendOrder(); // Geolocation mavjud bo'lmasa
+        sendOrder(); // Geolocation bo'lmasa
     }
 });
