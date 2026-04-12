@@ -37,14 +37,11 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtmani yuborish (DIAGNOSTIKA BILAN)
+// 4. Buyurtmani yuborish
 tg.MainButton.onClick(() => {
     tg.MainButton.showProgress();
     tg.MainButton.disable();
 
-    console.log("Bosildi! Buyurtma tayyorlanmoqda...");
-
-    // Ma'lumotni yuborish ichki funksiyasi
     const sendOrder = (lat = null, lon = null) => {
         try {
             const data = JSON.stringify({
@@ -55,26 +52,27 @@ tg.MainButton.onClick(() => {
 
             console.log("Yuborilayotgan JSON:", data);
 
-            // Signalni yuborish
+            // SIGNALNI YUBORISH
             tg.sendData(data);
             
-            console.log("✅ tg.sendData ishlatildi!");
+            // --- DIAGNOSTIKA UCHUN QO'SHILDI ---
+            alert("Signal Telegramga yuborildi! Endi CMD oynasini tekshiring.");
+            // ------------------------------------
 
-            // DIQQAT: tg.close() olib tashlandi, xatoni konsolda ko'rish uchun!
             setTimeout(() => {
                 tg.MainButton.hideProgress();
                 tg.MainButton.enable();
-                alert("Tekshiruv tugadi. Konsolga qarang!");
-            }, 3000);
+                tg.close(); // Signal ketgandan keyin yopamiz
+            }, 2000);
 
         } catch (e) {
-            console.error("❌ Xatolik yuz berdi:", e);
+            console.error("❌ Xatolik:", e);
+            alert("Xato: " + e.message);
             tg.MainButton.hideProgress();
             tg.MainButton.enable();
         }
     };
 
-    // Lokatsiya olish (timeout bilan)
     const geoOptions = { enableHighAccuracy: true, timeout: 4000 };
 
     if ("geolocation" in navigator) {
