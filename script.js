@@ -37,11 +37,12 @@ function updateMainButton() {
     }
 }
 
-// 4. Buyurtmani yuborish (Yaxlit va To'g'ri Funksiya)
+// 4. Buyurtmani yuborish (DIAGNOSTIKA BILAN)
 tg.MainButton.onClick(() => {
-    // Aylanib turish animatsiyasini yoqamiz
     tg.MainButton.showProgress();
     tg.MainButton.disable();
+
+    console.log("Bosildi! Buyurtma tayyorlanmoqda...");
 
     // Ma'lumotni yuborish ichki funksiyasi
     const sendOrder = (lat = null, lon = null) => {
@@ -52,18 +53,24 @@ tg.MainButton.onClick(() => {
                 total_sum: cart.reduce((s, i) => s + i.price, 0)
             });
 
+            console.log("Yuborilayotgan JSON:", data);
+
             // Signalni yuborish
             tg.sendData(data);
             
-            // Signal yetib borishi uchun 2 soniya kutib, keyin yopamiz
+            console.log("✅ tg.sendData ishlatildi!");
+
+            // DIQQAT: tg.close() olib tashlandi, xatoni konsolda ko'rish uchun!
             setTimeout(() => {
-                tg.close();
-            }, 2000);
+                tg.MainButton.hideProgress();
+                tg.MainButton.enable();
+                alert("Tekshiruv tugadi. Konsolga qarang!");
+            }, 3000);
+
         } catch (e) {
-            console.error("Xatolik yuz berdi:", e);
+            console.error("❌ Xatolik yuz berdi:", e);
             tg.MainButton.hideProgress();
             tg.MainButton.enable();
-            alert("Xatolik: " + e.message);
         }
     };
 
@@ -73,10 +80,10 @@ tg.MainButton.onClick(() => {
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (pos) => sendOrder(pos.coords.latitude, pos.coords.longitude),
-            () => sendOrder(), // Rad etilsa lokatsiyasiz ketadi
+            () => sendOrder(), 
             geoOptions
         );
     } else {
-        sendOrder(); // Geolocation bo'lmasa
+        sendOrder(); 
     }
 });
